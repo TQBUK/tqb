@@ -7,6 +7,7 @@ import { giftSubscriberId, newSubscriberId } from "@/sanity/lib/subscriber"
 import { getStripe } from "@/lib/stripe"
 import { getResend, upsertAudienceContact } from "@/lib/resend"
 import WelcomeEmail from "@/emails/welcome"
+import GiftConfirmationEmail from "@/emails/gift-confirmation"
 
 import UnsubscribedEmail from "@/emails/unsubscribed"
 
@@ -88,9 +89,32 @@ export async function POST(req: Request) {
                     }
                 }
 
-                // 3. Send Welcome Email via Resend & Sync Contact
-                if (env.RESEND_API_KEY) {
-                    const { data: emailData, error: emailError } = await getResend().emails.send({
+                // 3a. Gift: the buyer isn't the subscriber, so confirm the gift instead of welcoming them,
+                // and don't add them to the paid audience.
+                if (isGift) {
+                    if (env.RESEND_API_KEY) {
+                        const { error: emailError } = await getResend().emails.send({
+                            from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
+                            to: [customerEmail],
+                            subject: `Your gift of The Quiet Bloom${giftRecipientName ? ` for ${giftRecipientName}` : ""}`,
+                            react: GiftConfirmationEmail({
+                                recipientName: giftRecipientName || undefined,
+                                giftMessage,
+                                durationMonths: parseInt(session.metadata?.giftDurationMonths || "3", 10),
+                            }),
+                        })
+                        if (emailError) {
+                            console.error(`❌ Failed to send Gift Confirmation Email to ${customerEmail}:`, emailError)
+                        } else {
+                            console.log(`✉️ Gift Confirmation Email sent to ${customerEmail}`)
+                        }
+                    } else {
+                        console.warn("⚠️ RESEND_API_KEY is not set. Skipping Gift Confirmation Email.")
+                    }
+                }
+                // 3b. Subscription: Send Welcome Email via Resend & Sync Contact
+                else if (env.RESEND_API_KEY) {
+                    const { error: emailError } = await getResend().emails.send({
                         from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
                         to: [customerEmail],
                         subject: emailContent.subject,
