@@ -28,7 +28,7 @@ NEXT_PUBLIC_STRIPE_PORTAL_URL=https://billing.stripe.com/...
 # Sanity CMS (Required for Content)
 NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id_here
 NEXT_PUBLIC_SANITY_DATASET=production
-SANITY_API_TOKEN=your_token_here_optional_for_read
+SANITY_API_TOKEN=your_token_here   # required: subscriber documents are only readable with a token
 ```
 
 > **Note**: If you don't have a Sanity project ID yet, the site will show placeholder content.

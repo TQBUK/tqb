@@ -1,4 +1,5 @@
 import { client } from "@/sanity/lib/client"
+import { newSubscriberId } from "@/sanity/lib/subscriber"
 import { NextResponse } from "next/server"
 import { Resend } from "resend"
 import { env } from "@/lib/env"
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
 
         // Create new subscriber in Sanity Content Lake
         await client.create({
+            _id: newSubscriberId(),
             _type: 'subscriber',
             email,
             status: 'active',
