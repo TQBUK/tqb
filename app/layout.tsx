@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
+import { env } from "@/lib/env";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,6 +16,9 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  // Absolute base for Open Graph / Twitter image URLs. Without it they resolve to localhost
+  // outside Vercel (Vercel injects its production URL as a fallback).
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: "The Quiet Bloom",
   description: "A digital sanctuary for thoughtful living.",
 };

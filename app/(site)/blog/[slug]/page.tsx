@@ -6,6 +6,7 @@ import { PortableText } from "@portabletext/react"
 import Image from "next/image"
 import { urlFor } from "@/sanity/lib/image"
 import Link from "next/link"
+import { notFound } from "next/navigation"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
 export const revalidate = 60
@@ -21,11 +22,7 @@ export default async function BlogPostPage(props: Props) {
     const post = await client.fetch(postQuery, { slug: params.slug })
 
     if (!post) {
-        return (
-            <div className="min-h-[50vh] flex items-center justify-center">
-                <h1 className="text-2xl font-serif text-stone-400">Post not found</h1>
-            </div>
-        )
+        notFound()
     }
 
     return (
