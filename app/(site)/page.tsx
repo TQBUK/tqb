@@ -1,3 +1,4 @@
+import type { PostSummary } from "@/sanity/lib/types"
 import { client } from "@/sanity/lib/client"
 import { landingPageQuery, postsQuery } from "@/sanity/lib/queries"
 import { SectionRenderer } from "@/components/section-renderer"
@@ -6,7 +7,7 @@ export const revalidate = 3600 // safety net; publishing in Sanity refreshes pag
 
 export default async function LandingPage() {
     let data = null
-    let posts: any[] = []
+    let posts: PostSummary[] = []
 
     try {
         const results = await Promise.all([
@@ -26,7 +27,7 @@ export default async function LandingPage() {
                 <div className="text-center px-4">
                     <h1 className="text-2xl font-serif text-stone-900">Welcome to The Quiet Bloom</h1>
                     <p className="text-stone-500 mt-2 max-w-md mx-auto">
-                        We couldn't load the content. This usually happens if the Sanity Project ID is invalid or the content hasn't been published yet.
+                        We couldn&apos;t load the content. This usually happens if the Sanity Project ID is invalid or the content hasn&apos;t been published yet.
                     </p>
                     <div className="mt-4 text-sm text-stone-400">
                         Check your .env.local configuration.

@@ -20,7 +20,6 @@ interface UnsubscribedEmailProps {
 }
 
 export const UnsubscribedEmail = ({
-    email = "reader@example.com",
     heading = "Farewell for now.",
     bodyText = "We are writing to confirm that your subscription to The Quiet Bloom has been successfully cancelled.\n\nYou will not be billed again. We are honored to have shared our quiet corner of the internet with you, even if just for a little while.\n\nThe door is always open should you choose to return.",
     signoff = "Warmly,\nThe Quiet Bloom",

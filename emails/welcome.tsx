@@ -1,3 +1,4 @@
+import { env } from "@/lib/env"
 import {
     Body,
     Container,
@@ -20,7 +21,6 @@ interface WelcomeEmailProps {
 }
 
 export const WelcomeEmail = ({
-    email = "reader@example.com",
     heading = "Welcome to our quiet corner of the internet.",
     bodyText = "Thank you for subscribing. By becoming a patron, you're not just supporting our work—you're joining a community that values intentionality, reflection, and quiet luxury.\n\nEach month, you will receive a digital letter curated carefully to bring a moment of pause to your day.\n\nWe are so glad you are here.",
     signoff = "Warmly,\nThe Quiet Bloom",
@@ -65,7 +65,7 @@ export const WelcomeEmail = ({
                             <br />
                             <br />
                             To manage or cancel your subscription, please visit the{" "}
-                            <Link href={process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "https://billing.stripe.com"} style={footerLink}>
+                            <Link href={env.NEXT_PUBLIC_STRIPE_PORTAL_URL} style={footerLink}>
                                 Customer Portal
                             </Link>.
                         </Text>

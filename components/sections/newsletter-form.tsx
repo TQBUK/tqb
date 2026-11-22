@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Loader2, Check } from "lucide-react"
 
 export function NewsletterForm() {
@@ -27,7 +26,7 @@ export function NewsletterForm() {
             setStatus("success")
             setEmail("")
             setMessage("Thank you for joining our quiet corner.")
-        } catch (error) {
+        } catch {
             setStatus("error")
             setMessage("Something went wrong. Please try again.")
         }

@@ -1,5 +1,4 @@
 import { defineField, defineType } from 'sanity'
-import { pageSections } from './landingPage'
 
 export const giftPage = defineType({
     name: 'giftPage',

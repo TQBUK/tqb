@@ -3,7 +3,6 @@ import { newSubscriberId } from "@/sanity/lib/subscriber"
 import { NextResponse } from "next/server"
 import { getResend, upsertAudienceContact } from "@/lib/resend"
 import { env } from "@/lib/env"
-import { NewsletterWelcomeEmail } from "@/emails/newsletter-welcome"
 
 export async function POST(req: Request) {
     try {
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
         try {
             // Send the free tier welcome email using the Resend Hosted Template
             const { data, error } = await getResend().emails.send({
-                from: process.env.EMAIL_FROM || "The Quiet Bloom <onboarding@resend.dev>",
+                from: env.EMAIL_FROM,
                 to: email,
                 subject: "Welcome to our quiet corner of the internet.", // Fallback subject if not set in template
                 template: {

@@ -39,7 +39,7 @@
 3. **Automated Engagement**: 
    - A bespoke, heavily designed automated welcome email is dispatched to the user via **Resend**.
    - This email is rendered using `@react-email/components` (`emails/newsletter-welcome.tsx`) containing the "Noticing" micro-prompts.
-   - Behind the scenes, the `from` alias leverages `process.env.EMAIL_FROM` or defaults conditionally to test mode safety parameters (`onboarding@resend.dev`).
+   - All emails (newsletter, welcome, gift confirmation, cancellation) are sent from `EMAIL_FROM`, which defaults to `The Quiet Bloom <hello@thequietbloom.co.uk>` (the verified Resend domain).
 
 ### Paid Subscriber Flow (Print Club)
 
@@ -101,9 +101,10 @@ The Sanity Content Lake serves as the system of record. Key document schemas inc
 ## 🔐 4. Environmental Configuration & State Boundaries
 
 - Because the app leverages Stripe Webhooks and Resend automation, it requires stringent environment variable barriers.
+- **`lib/env.ts` is the single source of truth**: every variable is declared and validated there (zod), and server code reads `env.*`, never `process.env` directly. Exceptions: client components and `sanity/env.ts` (also loaded by the in-browser Studio) read `process.env.NEXT_PUBLIC_*` directly so the validation code isn't shipped to browsers.
 - **Subscriber data is hidden by document ID**: the `production` dataset is public (private datasets need a paid Sanity plan), but documents whose `_id` contains a `.` are only readable with a token. Every `subscriber` document must therefore be created with `newSubscriberId()` from `sanity/lib/subscriber.ts` (`subscriber.<uuid>`); never create one with an auto-generated ID. Existing documents were moved with `scripts/migrate-subscriber-ids.ts`.
 - **`SANITY_API_TOKEN` is required**: the shared Sanity client (`sanity/lib/client.ts`) sends it on every request so server code can find subscriber documents (e.g. the "already subscribed" check). Only import that client from server code.
 - **Unsubscribing**: free newsletter unsubscribes are handled by Resend's own unsubscribe link; paid subscribers cancel via the Stripe Customer Portal. There is intentionally no public "unsubscribe by email" API (it allowed anyone to unsubscribe any address and to check whether an address was subscribed).
 - **Stripe & Resend clients** are created lazily via `getStripe()` (`lib/stripe.ts`) and `getResend()` (`lib/resend.ts`), so `next build` succeeds without those secrets (e.g. Vercel Preview, which intentionally has no live secrets).
 - **Gift Config**: `STRIPE_GIFT_UK_PRICE_ID`, `STRIPE_GIFT_INTL_PRICE_ID` (one-time Stripe Price IDs), and `GIFT_DURATION_MONTHS` (defaults to `3`) control the gift subscription pricing and duration without code changes.
-- **Local Testing**: On the `free` tier of Resend, the application intercepts outgoing traffic and defaults strictly to a verified sandbox context (e.g. sending FROM `onboarding@resend.dev` TO a registered testing email) to prevent sandbox crashes. Sanity also blocks repeated local tests if the identical test email isn't manually deleted from the `subscriber` collection first.
+- **Local Testing**: To test against Resend's sandbox instead of the real domain, set `EMAIL_FROM="The Quiet Bloom <onboarding@resend.dev>"` locally (the sandbox only delivers to the Resend account owner's address). Sanity also blocks repeated local tests if the identical test email isn't manually deleted from the `subscriber` collection first.

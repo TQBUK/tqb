@@ -25,7 +25,7 @@ export const NewsletterWelcomeEmail = () => {
                         <Text style={locationText}>London</Text>
                         
                         <Text style={text}>
-                            Hello, I am Ash. I'm the person behind The Quiet Bloom - a small project to recreate the joy of receiving thoughtful letters.
+                            Hello, I am Ash. I&apos;m the person behind The Quiet Bloom - a small project to recreate the joy of receiving thoughtful letters.
                         </Text>
                         <Text style={text}>
                             As someone who balances work, motherhood, everyday responsibilities, this has become my way of returning to creativity.
@@ -63,7 +63,7 @@ export const NewsletterWelcomeEmail = () => {
                         <Text style={subtleHeader}>The Quiet Bloom</Text>
 
                         <Text style={h2Italic}>
-                            Right now, I'm just noticing.<br />
+                            Right now, I&apos;m just noticing.<br />
                             Not solving.
                         </Text>
 
@@ -92,7 +92,7 @@ export const NewsletterWelcomeEmail = () => {
                         </ul>
 
                         <Text style={text}>
-                            Before answering, take 10–20 seconds to breathe or pause. Reflection works best when your mind is not in "problem-solving mode" but in "noticing mode."
+                            Before answering, take 10–20 seconds to breathe or pause. Reflection works best when your mind is not in &quot;problem-solving mode&quot; but in &quot;noticing mode.&quot;
                         </Text>
 
                         <Text style={text}>
@@ -109,16 +109,16 @@ export const NewsletterWelcomeEmail = () => {
                         </Text>
 
                         <Text style={text}>
-                            You don't need a perfect answer. Even a few words like "pressure," "uncertainty," "too many small tasks," "emotional load" are enough.
+                            You don&apos;t need a perfect answer. Even a few words like &quot;pressure,&quot; &quot;uncertainty,&quot; &quot;too many small tasks,&quot; &quot;emotional load&quot; are enough.
                         </Text>
 
                         <Text style={text}>
-                            For the second question, you're not looking for a life overhaul—just something that shifts your day.
+                            For the second question, you&apos;re not looking for a life overhaul—just something that shifts your day.
                         </Text>
 
                         <Text style={textItalicCentered}>
                             After your reflection, ask :<br />
-                            "What is one small thing I can do in the next hour that honours what I just discovered?"
+                            &quot;What is one small thing I can do in the next hour that honours what I just discovered?&quot;
                         </Text>
                     </Section>
 

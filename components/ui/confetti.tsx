@@ -1,18 +1,17 @@
 "use client"
 
-import React from 'react'
+import React, { useSyncExternalStore } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'react-use'
-import { useEffect, useState } from 'react'
+
+// false on the server and during hydration, true afterwards — renders only on the client without
+// a hydration mismatch (and without a setState-in-effect re-render).
+const subscribe = () => () => {}
+const useIsClient = () => useSyncExternalStore(subscribe, () => true, () => false)
 
 export function SuccessConfetti() {
     const { width, height } = useWindowSize()
-    const [isClient, setIsClient] = useState(false)
-
-    // ensure it only mounts on client to prevent hydration mismatch
-    useEffect(() => {
-        setIsClient(true)
-    }, [])
+    const isClient = useIsClient()
 
     if (!isClient) return null
 

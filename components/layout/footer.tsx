@@ -1,3 +1,5 @@
+import { env } from "@/lib/env"
+import type { NavLink, SocialLink } from "@/sanity/lib/types"
 import Link from "next/link"
 import { NewsletterForm } from "@/components/sections/newsletter-form"
 import { client } from "@/sanity/lib/client"
@@ -27,7 +29,7 @@ export async function Footer() {
     ]
     
     const supportLinks = footer.supportLinks?.length > 0 ? footer.supportLinks : [
-        { label: 'Manage Subscriptions', url: process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL || "https://billing.stripe.com" },
+        { label: 'Manage Subscriptions', url: env.NEXT_PUBLIC_STRIPE_PORTAL_URL },
         { label: 'Privacy Policy', url: '/legal/privacy' },
         { label: 'Terms of Service', url: '/legal/terms' }
     ]
@@ -60,7 +62,7 @@ export async function Footer() {
                                 <div className="flex flex-col items-center lg:items-start gap-4">
                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-stone-900">Explore</h4>
                                     <nav className="flex flex-col items-center lg:items-start gap-3">
-                                        {exploreLinks.map((link: any, idx: number) => (
+                                        {exploreLinks.map((link: NavLink, idx: number) => (
                                             <Link key={idx} href={link.url} className="text-sm text-stone-500 hover:text-stone-900 transition-colors">
                                                 {link.label}
                                             </Link>
@@ -73,7 +75,7 @@ export async function Footer() {
                                 <div className="flex flex-col items-center lg:items-start gap-4">
                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-stone-900">Support</h4>
                                     <nav className="flex flex-col items-center lg:items-start gap-3">
-                                        {supportLinks.map((link: any, idx: number) => {
+                                        {supportLinks.map((link: NavLink, idx: number) => {
                                             if (link.url.startsWith('http')) {
                                                 return (
                                                     <a key={idx} href={link.url} className="text-sm font-medium text-stone-900 hover:text-stone-600 transition-colors">
@@ -134,7 +136,7 @@ export async function Footer() {
                         © {new Date().getFullYear()} {title}. All rights reserved.
                     </p>
                     <div className="flex gap-6">
-                        {settings?.socialLinks?.map((social: any) => (
+                        {settings?.socialLinks?.map((social: SocialLink) => (
                             <a
                                 key={social.platform}
                                 href={social.url}

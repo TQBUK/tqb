@@ -1,5 +1,4 @@
 import React from "react"
-import { FadeIn } from "@/components/ui/fade-in"
 import { Hero } from "@/components/sections/hero"
 import { TextBlock } from "@/components/sections/text-block"
 import { FeatureList } from "@/components/sections/feature-list"

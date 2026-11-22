@@ -9,7 +9,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant = "primary", size = "md", asChild = false, ...props }, ref) => {
+    // asChild is pulled out so it isn't forwarded to the DOM <button>
+    ({ className, variant = "primary", size = "md", asChild, ...props }, ref) => {
         // const Comp = asChild ? Slot : "button"
         const Comp = "button"
         return (

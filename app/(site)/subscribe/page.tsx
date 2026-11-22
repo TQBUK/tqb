@@ -1,8 +1,8 @@
+import type { PricingTier } from "@/sanity/lib/types"
 import { client } from "@/sanity/lib/client"
 import { subscribePageQuery } from "@/sanity/lib/queries"
 import { Pricing } from "@/components/sections/pricing"
 import { Container } from "@/components/ui/container"
-import { Section } from "@/components/ui/section"
 
 export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
@@ -28,7 +28,7 @@ export default async function SubscribePage() {
 
     // Automatically ensure the Free Tier is present if it hasn't been added manually in Sanity
     let finalTiers = data.tiers || []
-    if (!finalTiers.some((t: any) => t.price?.toLowerCase() === 'free' || t.price === '£0')) {
+    if (!finalTiers.some((t: PricingTier) => t.price?.toLowerCase() === 'free' || t.price === '£0')) {
         finalTiers = [
             {
                 name: "Digital Reader",

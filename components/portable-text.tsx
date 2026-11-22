@@ -1,4 +1,4 @@
-import { PortableText as PortableTextReact, PortableTextComponents } from "@portabletext/react"
+import { PortableText as PortableTextReact, PortableTextComponents, type PortableTextProps } from "@portabletext/react"
 
 const components: PortableTextComponents = {
     block: {
@@ -28,6 +28,6 @@ const components: PortableTextComponents = {
     },
 }
 
-export function PortableText({ value }: { value: any }) {
+export function PortableText({ value }: { value: PortableTextProps["value"] }) {
     return <PortableTextReact value={value} components={components} />
 }

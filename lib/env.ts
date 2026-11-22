@@ -1,5 +1,9 @@
 import { z } from 'zod'
 
+// Single source of truth for configuration. Server code reads `env.*` from here.
+// Exceptions: client components ("use client") and sanity/env.ts (also loaded by the in-browser
+// Studio) read process.env.NEXT_PUBLIC_* directly, because importing this module would ship the
+// validation code to the browser. Next.js inlines those values at build time.
 const envSchema = z.object({
     NEXT_PUBLIC_SITE_URL: z.string().url(),
     NEXT_PUBLIC_STRIPE_UK_URL: z.string().url(),
@@ -22,6 +26,8 @@ const envSchema = z.object({
     RESEND_API_KEY: z.string().optional(),
     RESEND_AUDIENCE_ID: z.string().optional(),
     RESEND_LEADS_AUDIENCE_ID: z.string().optional(),
+    EMAIL_FROM: z.string().min(1).default("The Quiet Bloom <hello@thequietbloom.co.uk>"),
+    NEXT_PUBLIC_UMAMI_WEBSITE_ID: z.string().optional(),
 })
 
 export const env = envSchema.parse({
@@ -46,4 +52,6 @@ export const env = envSchema.parse({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_AUDIENCE_ID: process.env.RESEND_AUDIENCE_ID,
     RESEND_LEADS_AUDIENCE_ID: process.env.RESEND_LEADS_AUDIENCE_ID,
+    EMAIL_FROM: process.env.EMAIL_FROM || undefined,
+    NEXT_PUBLIC_UMAMI_WEBSITE_ID: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
 })
