@@ -9,12 +9,18 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 
-export const revalidate = 60
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 interface Props {
     params: Promise<{
         slug: string
     }>
+}
+
+// Prerender published posts at build time; new slugs render once on first visit and are then cached.
+export async function generateStaticParams() {
+    const slugs: string[] = await client.fetch(`*[_type == "post" && defined(slug.current)].slug.current`)
+    return slugs.map((slug) => ({ slug }))
 }
 
 export default async function BlogPostPage(props: Props) {

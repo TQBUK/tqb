@@ -5,10 +5,16 @@ import { Section } from "@/components/ui/section"
 import { PortableText } from "@/components/portable-text"
 import { notFound } from "next/navigation"
 
-export const revalidate = 60
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 interface LegalPageProps {
     params: Promise<{ slug: string }>
+}
+
+// Prerender published legal pages at build time; new slugs render once on first visit and are then cached.
+export async function generateStaticParams() {
+    const slugs: string[] = await client.fetch(`*[_type == "legalPage" && defined(slug.current)].slug.current`)
+    return slugs.map((slug) => ({ slug }))
 }
 
 export default async function LegalPage({ params }: LegalPageProps) {

@@ -2,7 +2,7 @@ import { client } from "@/sanity/lib/client"
 import { giftPageQuery } from "@/sanity/lib/queries"
 import { GiftPageClient } from "@/components/sections/gift-page-client"
 
-export const revalidate = 60 // standard revalidation for ISR
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 export default async function GiftPageWrapper() {
     let data = null

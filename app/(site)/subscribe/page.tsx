@@ -4,14 +4,13 @@ import { Pricing } from "@/components/sections/pricing"
 import { Container } from "@/components/ui/container"
 import { Section } from "@/components/ui/section"
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 export default async function SubscribePage() {
     let data = null
 
     try {
-        data = await client.fetch(subscribePageQuery, {}, { cache: 'no-store' })
+        data = await client.fetch(subscribePageQuery)
     } catch (error) {
         console.error("Error fetching subscribe page data:", error)
     }

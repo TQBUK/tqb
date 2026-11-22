@@ -29,6 +29,7 @@ NEXT_PUBLIC_STRIPE_PORTAL_URL=https://billing.stripe.com/...
 NEXT_PUBLIC_SANITY_PROJECT_ID=your_project_id_here
 NEXT_PUBLIC_SANITY_DATASET=production
 SANITY_API_TOKEN=your_token_here   # required: subscriber documents are only readable with a token
+SANITY_REVALIDATE_SECRET=long_random_string   # shared with the Sanity webhook that refreshes pages on publish
 ```
 
 > **Note**: If you don't have a Sanity project ID yet, the site will show placeholder content.

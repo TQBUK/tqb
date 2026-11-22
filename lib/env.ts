@@ -9,6 +9,7 @@ const envSchema = z.object({
     NEXT_PUBLIC_SANITY_PROJECT_ID: z.string().min(1),
     NEXT_PUBLIC_SANITY_DATASET: z.string().min(1),
     SANITY_API_TOKEN: z.string().optional(),
+    SANITY_REVALIDATE_SECRET: z.string().optional(),
 
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
@@ -32,6 +33,7 @@ export const env = envSchema.parse({
     NEXT_PUBLIC_SANITY_PROJECT_ID: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
     NEXT_PUBLIC_SANITY_DATASET: process.env.NEXT_PUBLIC_SANITY_DATASET,
     SANITY_API_TOKEN: process.env.SANITY_API_TOKEN,
+    SANITY_REVALIDATE_SECRET: process.env.SANITY_REVALIDATE_SECRET,
 
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
