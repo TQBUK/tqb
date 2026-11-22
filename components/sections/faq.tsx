@@ -41,10 +41,10 @@ export function FAQ({ title = "Frequently Asked Questions", items, backgroundCol
                                 <details className="group border-b border-stone-200 pb-6 transition-all duration-300">
                                     <summary className="flex cursor-pointer list-none items-center justify-between text-lg md:text-xl font-serif font-light text-stone-900 group-hover:text-stone-600 transition-colors">
                                         {item.question}
-                                        <span className="ml-4 flex-shrink-0 text-stone-400 group-open:hidden group-hover:text-stone-600 transition-colors">
+                                        <span className="ml-4 flex-shrink-0 text-stone-500 group-open:hidden group-hover:text-stone-600 transition-colors">
                                             <Plus size={20} strokeWidth={1} />
                                         </span>
-                                        <span className="ml-4 flex-shrink-0 text-stone-400 hidden group-open:block group-hover:text-stone-600 transition-colors">
+                                        <span className="ml-4 flex-shrink-0 text-stone-500 hidden group-open:block group-hover:text-stone-600 transition-colors">
                                             <Minus size={20} strokeWidth={1} />
                                         </span>
                                     </summary>
@@ -62,10 +62,10 @@ export function FAQ({ title = "Frequently Asked Questions", items, backgroundCol
                                 <details className="group border-b border-stone-200 pb-6 transition-all duration-300">
                                     <summary className="flex cursor-pointer list-none items-center justify-between text-lg md:text-xl font-serif font-light text-stone-900 group-hover:text-stone-600 transition-colors">
                                         {item.question}
-                                        <span className="ml-4 flex-shrink-0 text-stone-400 group-open:hidden group-hover:text-stone-600 transition-colors">
+                                        <span className="ml-4 flex-shrink-0 text-stone-500 group-open:hidden group-hover:text-stone-600 transition-colors">
                                             <Plus size={20} strokeWidth={1} />
                                         </span>
-                                        <span className="ml-4 flex-shrink-0 text-stone-400 hidden group-open:block group-hover:text-stone-600 transition-colors">
+                                        <span className="ml-4 flex-shrink-0 text-stone-500 hidden group-open:block group-hover:text-stone-600 transition-colors">
                                             <Minus size={20} strokeWidth={1} />
                                         </span>
                                     </summary>

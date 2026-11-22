@@ -114,8 +114,8 @@ export function Pricing({ heading = "Membership", subheading, tiers, className, 
                                 <div className="mb-8">
                                     {isGift && (
                                         <div className="flex items-center gap-3 mb-2">
-                                            <Gift className="h-5 w-5 text-stone-400" strokeWidth={1.5} />
-                                            <span className="text-sm text-stone-400 font-light tracking-wide uppercase">3 Months Gift</span>
+                                            <Gift className="h-5 w-5 text-stone-500" strokeWidth={1.5} />
+                                            <span className="text-sm text-stone-500 font-light tracking-wide uppercase">3 Months Gift</span>
                                         </div>
                                     )}
                                     <h3 className="text-2xl font-serif text-stone-900 group-hover:text-stone-600 transition-colors">{tier.name}</h3>
@@ -129,7 +129,7 @@ export function Pricing({ heading = "Membership", subheading, tiers, className, 
                                 <ul className="mb-10 space-y-5 flex-1">
                                     {tier.features.map((feature) => (
                                         <li key={feature} className="flex items-start">
-                                            <Check className="mr-4 h-5 w-5 flex-shrink-0 text-stone-400 group-hover:text-stone-900 transition-colors duration-500 mt-0.5" strokeWidth={1.5} />
+                                            <Check className="mr-4 h-5 w-5 flex-shrink-0 text-stone-500 group-hover:text-stone-900 transition-colors duration-500 mt-0.5" strokeWidth={1.5} />
                                             <span className="text-stone-600 font-light leading-relaxed text-sm md:text-base">{feature}</span>
                                         </li>
                                     ))}

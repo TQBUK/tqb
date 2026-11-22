@@ -38,7 +38,7 @@ export function FeatureList({ heading, features, showNumbers = false, background
                 <FadeInStagger className="grid gap-8 md:gap-12 md:grid-cols-3 max-w-5xl mx-auto">
                     {features.map((feature, idx) => (
                         <FadeIn key={idx} className="flex flex-col items-start text-left p-8 md:p-10 h-full rounded-2xl bg-stone-50 border border-stone-100 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:shadow-stone-200/50 group">
-                            <div className="mb-6 text-stone-400 group-hover:text-stone-900 transition-colors duration-500">
+                            <div className="mb-6 text-stone-500 group-hover:text-stone-900 transition-colors duration-500">
                                 {showNumbers ? (
                                     <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-stone-200 bg-white font-serif text-xl font-light">
                                         {idx + 1}

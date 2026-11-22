@@ -132,7 +132,7 @@ export async function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="mt-16 pt-8 border-t border-stone-200 flex flex-col items-center justify-between gap-6 md:flex-row">
-                    <p className="text-xs text-stone-400">
+                    <p className="text-xs text-stone-500">
                         © {new Date().getFullYear()} {title}. All rights reserved.
                     </p>
                     <div className="flex gap-6">
@@ -142,7 +142,7 @@ export async function Footer() {
                                 href={social.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-widest"
+                                className="text-xs text-stone-500 hover:text-stone-900 transition-colors uppercase tracking-widest"
                             >
                                 {social.platform}
                             </a>
