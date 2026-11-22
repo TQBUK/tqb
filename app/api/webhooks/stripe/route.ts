@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import Stripe from "stripe"
 import { env } from "@/lib/env"
 import { client } from "@/sanity/lib/client"
+import { newSubscriberId } from "@/sanity/lib/subscriber"
 import { Resend } from "resend"
 import WelcomeEmail from "@/emails/welcome"
 
@@ -134,7 +135,8 @@ export async function POST(req: Request) {
                     )
 
                     if (!existing) {
-                        const subscriberDoc: { _type: string; [key: string]: any } = {
+                        const subscriberDoc: { _id: string; _type: string; [key: string]: any } = {
+                            _id: newSubscriberId(),
                             _type: 'subscriber',
                             email: customerEmail,
                             status: 'active',
