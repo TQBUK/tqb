@@ -42,7 +42,7 @@ export function NewsletterForm() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={status === "loading" || status === "success"}
-                    className="flex-1 bg-transparent px-2 py-2 focus:outline-none placeholder:text-stone-400 text-stone-800 disabled:opacity-50 transition-all font-light text-sm md:text-base w-full"
+                    className="flex-1 bg-transparent px-2 py-2 focus:outline-none placeholder:text-stone-500 text-stone-800 disabled:opacity-50 transition-all font-light text-sm md:text-base w-full"
                 />
                 <button
                     type="submit"

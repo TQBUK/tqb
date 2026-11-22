@@ -29,7 +29,7 @@ export default async function LandingPage() {
                     <p className="text-stone-500 mt-2 max-w-md mx-auto">
                         We couldn&apos;t load the content. This usually happens if the Sanity Project ID is invalid or the content hasn&apos;t been published yet.
                     </p>
-                    <div className="mt-4 text-sm text-stone-400">
+                    <div className="mt-4 text-sm text-stone-500">
                         Check your .env.local configuration.
                     </div>
                 </div>

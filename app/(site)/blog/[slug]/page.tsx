@@ -77,7 +77,7 @@ export default async function BlogPostPage(props: Props) {
                                     href={`/blog/${post.prev.slug}`}
                                     className="group flex flex-col items-start flex-1 max-w-[300px]"
                                 >
-                                    <span className="text-xs uppercase tracking-widest text-stone-400 mb-2 flex items-center">
+                                    <span className="text-xs uppercase tracking-widest text-stone-500 mb-2 flex items-center">
                                         <ArrowLeft className="mr-2 h-3 w-3" /> Previous
                                     </span>
                                     <span className="font-serif text-xl text-stone-900 group-hover:text-stone-600 transition-colors leading-snug">
@@ -91,7 +91,7 @@ export default async function BlogPostPage(props: Props) {
                                     href={`/blog/${post.next.slug}`}
                                     className="group flex flex-col items-end text-right flex-1 max-w-[300px]"
                                 >
-                                    <span className="text-xs uppercase tracking-widest text-stone-400 mb-2 flex items-center">
+                                    <span className="text-xs uppercase tracking-widest text-stone-500 mb-2 flex items-center">
                                         Next <ArrowRight className="ml-2 h-3 w-3" />
                                     </span>
                                     <span className="font-serif text-xl text-stone-900 group-hover:text-stone-600 transition-colors leading-snug">

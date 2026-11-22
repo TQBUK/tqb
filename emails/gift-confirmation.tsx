@@ -160,7 +160,7 @@ const footer = {
 }
 
 const footerText = {
-    color: "#a8a29e", // stone-400
+    color: "#57534e", // stone-600 (stone-400 was below 4.5:1 on the email background)
     fontSize: "13px",
     textAlign: "center" as const,
 }
