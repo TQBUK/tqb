@@ -15,6 +15,14 @@
 - **Email Delivery**: Resend (Transactional emails and Audience management).
 - **Styling**: Tailwind CSS v4, `lucide-react` icons, Framer Motion for micro-animations, and `shadcn/ui` foundation.
 - **Analytics**: Vercel Analytics and Umami.
+- **Images**: `next/image` uses a custom loader (`lib/image-loader.ts`) that has the Sanity and Unsplash CDNs resize and convert images (`w`, `q`, `auto=format`), so the hosting platform's image optimisation (and its usage limits) is not used.
+
+### Caching & Revalidation
+
+- All content pages are statically generated with ISR, `revalidate = 3600` (an hourly safety net). Blog posts and legal pages are prerendered at build via `generateStaticParams`; new slugs render once on first visit and are then cached.
+- **On-demand revalidation**: a Sanity GROQ webhook calls `POST /api/revalidate` when content is published. The route verifies the `sanity-webhook-signature` header with `SANITY_REVALIDATE_SECRET` (`parseBody` from `next-sanity/webhook`), ignores `subscriber` documents, and runs `revalidatePath("/", "layout")` so every page picks up the change immediately.
+- Webhook setup (sanity.io/manage → API → Webhooks): URL `https://www.thequietbloom.co.uk/api/revalidate`, dataset `production`, trigger on create/update/delete, filter `!(_id in path("subscriber.**"))`, projection `{_type}` (so no subscriber data is ever sent), HTTP POST, secret = `SANITY_REVALIDATE_SECRET`.
+- Without the webhook, content edits still appear within an hour.
 
 ---
 

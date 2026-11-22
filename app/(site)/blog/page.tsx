@@ -8,7 +8,7 @@ import { urlFor } from "@/sanity/lib/image"
 import { ArrowRight, BookOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export const revalidate = 60
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 export default async function BlogIndexPage() {
     const posts = await client.fetch(postsQuery)

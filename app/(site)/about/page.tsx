@@ -7,7 +7,7 @@ import { notFound } from "next/navigation"
 // Reuse the legal page query but hardcode for manifesto
 const aboutPageQuery = `*[_type == "legalPage" && slug.current == "manifesto"][0]`
 
-export const revalidate = 60
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 export default async function AboutPage() {
     let data = null

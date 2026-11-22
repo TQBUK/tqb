@@ -2,7 +2,7 @@ import { client } from "@/sanity/lib/client"
 import { landingPageQuery, postsQuery } from "@/sanity/lib/queries"
 import { SectionRenderer } from "@/components/section-renderer"
 
-export const revalidate = 60 // standard revalidation for ISR
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 export default async function LandingPage() {
     let data = null

@@ -7,7 +7,7 @@ import Link from "next/link"
 import { client } from "@/sanity/lib/client"
 import { SuccessConfetti } from "@/components/ui/confetti"
 
-export const revalidate = 60 // Revalidate every minute
+export const revalidate = 3600 // safety net; publishing in Sanity refreshes pages instantly via /api/revalidate
 
 export default async function SuccessPage() {
     // Fetch content from Sanity, or fallback if the document doesn't exist yet
