@@ -18,7 +18,8 @@ export const subscriber = defineType({
             options: {
                 list: [
                     { title: 'Active', value: 'active' },
-                    { title: 'Unsubscribed', value: 'unsubscribed' },
+                    { title: 'Unsubscribed (free newsletter)', value: 'unsubscribed' },
+                    { title: 'Cancelled (paid subscription ended)', value: 'cancelled' },
                 ],
                 layout: 'radio',
             },

@@ -6,3 +6,8 @@ export const SUBSCRIBER_ID_PREFIX = 'subscriber.'
 export function newSubscriberId(): string {
     return `${SUBSCRIBER_ID_PREFIX}${crypto.randomUUID()}`
 }
+
+// Deterministic ID per Stripe Checkout Session, so a retried webhook can't create a duplicate gift.
+export function giftSubscriberId(checkoutSessionId: string): string {
+    return `${SUBSCRIBER_ID_PREFIX}gift-${checkoutSessionId}`
+}

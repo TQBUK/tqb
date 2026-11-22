@@ -1,7 +1,7 @@
 import { client } from "@/sanity/lib/client"
 import { newSubscriberId } from "@/sanity/lib/subscriber"
 import { NextResponse } from "next/server"
-import { getResend } from "@/lib/resend"
+import { getResend, upsertAudienceContact } from "@/lib/resend"
 import { env } from "@/lib/env"
 import { NewsletterWelcomeEmail } from "@/emails/newsletter-welcome"
 
@@ -13,47 +13,41 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Invalid email address" }, { status: 400 })
         }
 
-        // Check if already subscribed in Sanity
-        const existing = await client.fetch(
-            `*[_type == "subscriber" && email == $email][0]`,
+        // Check if already subscribed in Sanity (gift records are stored under the buyer's email; ignore them)
+        const existing: { _id: string; status?: string } | null = await client.fetch(
+            `*[_type == "subscriber" && email == $email && isGift != true][0]{_id, status}`,
             { email }
         )
 
-        if (existing) {
+        if (existing?.status === 'active') {
             return NextResponse.json({ message: "Already subscribed" }, { status: 200 })
         }
 
-        // Add to Resend Audience First
+        // Add to (or re-subscribe in) the Resend Audience first
         const targetAudienceId = env.RESEND_LEADS_AUDIENCE_ID || env.RESEND_AUDIENCE_ID
         if (targetAudienceId) {
             try {
-                const { data, error } = await getResend().contacts.create({
-                    email: email,
-                    audienceId: targetAudienceId,
-                    unsubscribed: false,
-                })
-                if (error) {
-                    console.error("Resend Audience Add Error (API):", error)
-                } else {
-                    console.log("Added to Resend Audience successfully.")
-                }
+                await upsertAudienceContact(targetAudienceId, { email })
+                console.log("Added to Resend Audience successfully.")
             } catch (resendError) {
-                console.error("Resend Audience Add Exception:", resendError)
+                console.error("Resend Audience Add Error:", resendError)
                 // We're letting this pass through even if it fails, so Sanity still captures them
             }
         }
 
-        // Create new subscriber in Sanity Content Lake
-        await client.create({
-            _id: newSubscriberId(),
-            _type: 'subscriber',
-            email,
-            status: 'active',
-            tier: 'free',
-            signedUpAt: new Date().toISOString()
-        }, {
-            token: process.env.SANITY_API_TOKEN // Ensure write token is used
-        })
+        if (existing) {
+            // Returning reader (previously unsubscribed, or a cancelled paid subscriber): re-activate as free.
+            await client.patch(existing._id).set({ status: 'active', tier: 'free' }).commit()
+        } else {
+            await client.create({
+                _id: newSubscriberId(),
+                _type: 'subscriber',
+                email,
+                status: 'active',
+                tier: 'free',
+                signedUpAt: new Date().toISOString()
+            })
+        }
 
         try {
             // Send the free tier welcome email using the Resend Hosted Template

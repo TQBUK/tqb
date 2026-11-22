@@ -25,9 +25,9 @@
 1. **User Action**: The visitor enters their email via the free subscribe button on the home page, the dedicated `/subscribe` page, or the global footer newsletter form.
 2. **API Execution (`/api/newsletter/subscribe`)**:
    - The application checks **Sanity** to see if the user's email already exists as a `subscriber` document.
-   - **Protection Mechanism**: If the email exists, the API returns a silent `200 OK` early so that duplicate subscribers and spam emails are not triggered.
-   - If the email is new, it syncs the contact to the **Resend Audience** (`RESEND_LEADS_AUDIENCE_ID` or `RESEND_AUDIENCE_ID`).
-   - A new `subscriber` document is generated in **Sanity** with `tier: 'free'` and `status: 'active'`.
+   - **Protection Mechanism**: If an **active** (non-gift) record exists, the API returns a silent `200 OK` ("Already subscribed") so that duplicate subscribers and spam emails are not triggered.
+   - Otherwise it adds (or re-subscribes) the contact in the **Resend Audience** (`RESEND_LEADS_AUDIENCE_ID` or `RESEND_AUDIENCE_ID`) via `upsertAudienceContact()` (`lib/resend.ts`).
+   - A new `subscriber` document is created in **Sanity** with `tier: 'free'` and `status: 'active'`; a returning reader whose record is `unsubscribed`/`cancelled` is re-activated as `free`/`active` instead.
 3. **Automated Engagement**: 
    - A bespoke, heavily designed automated welcome email is dispatched to the user via **Resend**.
    - This email is rendered using `@react-email/components` (`emails/newsletter-welcome.tsx`) containing the "Noticing" micro-prompts.
@@ -43,8 +43,8 @@
    - Upon successful payment, Stripe fires a `checkout.session.completed` event asynchronously to the backend.
    - The signature is verified with `STRIPE_WEBHOOK_SECRET`. Unsigned events are only accepted when `NODE_ENV === "development"`; anywhere else a missing secret rejects the webhook (500) and a missing `Stripe-Signature` header returns 400.
    - The webhook queries **Sanity** for dynamically editable Welcome Email templates (`*[_type == "welcomeEmail"]`).
-   - A `subscriber` document is created in **Sanity** with `tier: 'paid'` and `status: 'active'`.
-   - The user's name and email are synchronized to the main **Resend Audience**.
+   - The customer's existing non-gift `subscriber` record (e.g. a free reader upgrading, or a cancelled subscriber returning) is updated to `tier: 'paid'`, `status: 'active'`; if there is none, a new one is created.
+   - The user's name and email are added to (or re-subscribed in) the main **Resend Audience**.
    - An automated, high-fidelity React Welcome Email (`emails/welcome.tsx`) is deployed to the user.
 
 ### Cancellation & Churn Flow
@@ -55,8 +55,8 @@
    - The backend looks up the corresponding Stripe Customer ID to retrieve the user's email address.
    - **Sanity** is queried for the dynamically editable Goodbye/Unsubscribe Email templates.
    - A thoughtful, automated Farewell Email is dispatched to the ex-subscriber (`emails/unsubscribed.tsx`).
-   - The user is permanently **removed** from the active Resend Audience to stop future mailings.
-   - The `subscriber` document in **Sanity** is automatically patched to update its status to `status: 'cancelled'`.
+   - The user is permanently **removed** from the active Resend Audience (by email) to stop future mailings.
+   - The customer's non-gift `subscriber` document in **Sanity** is patched to `status: 'cancelled'` (gift records bought by the same customer are left alone). Failures at each step are logged.
 
 ### Gift Subscription Flow
 
@@ -68,7 +68,7 @@
    - The session `metadata` stores `isGift: "true"`, `tier`, and `giftDurationMonths`.
 3. **Payment Completion & Stripe Webhook**:
    - The webhook detects `session.metadata.isGift === "true"` and extracts the `recipientname` and `giftmessage` custom fields.
-   - A `subscriber` document is created in **Sanity** with gift fields: `isGift`, `giftRecipientName`, `giftMessage`, `gifterEmail`, and `giftExpiresAt` (calculated as `now + GIFT_DURATION_MONTHS`).
+   - A separate `subscriber` document is created in **Sanity** for each gift, with gift fields: `isGift`, `giftRecipientName`, `giftMessage`, `gifterEmail`, and `giftExpiresAt` (calculated as `now + GIFT_DURATION_MONTHS`). Its ID is `subscriber.gift-<checkoutSessionId>` (`giftSubscriberId()`), so Stripe retries don't create duplicates and the buyer's own subscription record is never overwritten.
    - Gift subscribers appear with a 🎁 prefix in the Sanity Studio preview.
 4. **Gift Expiry (Future)**: A Vercel Cron Job can check for expired gifts daily and send nudge emails to recipients and gifters.
 
@@ -78,7 +78,7 @@
 
 The Sanity Content Lake serves as the system of record. Key document schemas include:
 
-- **`subscriber`**: Stores `email`, `status` (Active/Unsubscribed), `tier` (Free/Paid), `signedUpAt`, and gift-specific fields: `isGift` (boolean), `giftRecipientName`, `giftMessage`, `gifterEmail`, and `giftExpiresAt`.
+- **`subscriber`**: Stores `email`, `status` (`active` / `unsubscribed` for the free newsletter / `cancelled` when a paid subscription ends), `tier` (Free/Paid), `signedUpAt`, and gift-specific fields: `isGift` (boolean), `giftRecipientName`, `giftMessage`, `gifterEmail`, and `giftExpiresAt`.
 - **`post`**: Standard content format for editorial blog posts (Title, Slug, Main Image, Rich Text Block Content).
 - **`landingPage` & `subscribePage` & `successPage`**: Enables the site admin to edit headline copy, images, benefits, and call-to-actions without touching code.
 - **`siteSettings`**: Global state like the logo, brand colors, copyright, navigation links, and SEO defaults.
