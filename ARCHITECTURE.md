@@ -37,10 +37,11 @@
 
 1. **User Action**: The visitor selects either the "UK" or "International" tier on the Subscribe overlay/page.
 2. **Checkout Initiation (`/api/checkout`)**:
-   - Next.js provisions a dedicated **Stripe Checkout Session**.
+   - Next.js provisions a dedicated **Stripe Checkout Session**. The client only sends the tier name; the Price ID is always resolved server-side from env vars (a `priceId` in the request is ignored). An unknown tier returns 400, and a missing Price ID returns 500 rather than falling back to another price.
    - During checkout, custom details are dynamically explicitly requested, such as a **Shipping Address** (limited to allowed countries based on the tier) and an optional **Birthday Month** dropdown.
 3. **Payment Completion & Stripe Webhook (`/api/webhooks/stripe`)**:
    - Upon successful payment, Stripe fires a `checkout.session.completed` event asynchronously to the backend.
+   - The signature is verified with `STRIPE_WEBHOOK_SECRET`. Unsigned events are only accepted when `NODE_ENV === "development"`; anywhere else a missing secret rejects the webhook (500) and a missing `Stripe-Signature` header returns 400.
    - The webhook queries **Sanity** for dynamically editable Welcome Email templates (`*[_type == "welcomeEmail"]`).
    - A `subscriber` document is created in **Sanity** with `tier: 'paid'` and `status: 'active'`.
    - The user's name and email are synchronized to the main **Resend Audience**.
@@ -94,5 +95,6 @@ The Sanity Content Lake serves as the system of record. Key document schemas inc
 - **Subscriber data is hidden by document ID**: the `production` dataset is public (private datasets need a paid Sanity plan), but documents whose `_id` contains a `.` are only readable with a token. Every `subscriber` document must therefore be created with `newSubscriberId()` from `sanity/lib/subscriber.ts` (`subscriber.<uuid>`); never create one with an auto-generated ID. Existing documents were moved with `scripts/migrate-subscriber-ids.ts`.
 - **`SANITY_API_TOKEN` is required**: the shared Sanity client (`sanity/lib/client.ts`) sends it on every request so server code can find subscriber documents (e.g. the "already subscribed" check). Only import that client from server code.
 - **Unsubscribing**: free newsletter unsubscribes are handled by Resend's own unsubscribe link; paid subscribers cancel via the Stripe Customer Portal. There is intentionally no public "unsubscribe by email" API (it allowed anyone to unsubscribe any address and to check whether an address was subscribed).
+- **Stripe & Resend clients** are created lazily via `getStripe()` (`lib/stripe.ts`) and `getResend()` (`lib/resend.ts`), so `next build` succeeds without those secrets (e.g. Vercel Preview, which intentionally has no live secrets).
 - **Gift Config**: `STRIPE_GIFT_UK_PRICE_ID`, `STRIPE_GIFT_INTL_PRICE_ID` (one-time Stripe Price IDs), and `GIFT_DURATION_MONTHS` (defaults to `3`) control the gift subscription pricing and duration without code changes.
 - **Local Testing**: On the `free` tier of Resend, the application intercepts outgoing traffic and defaults strictly to a verified sandbox context (e.g. sending FROM `onboarding@resend.dev` TO a registered testing email) to prevent sandbox crashes. Sanity also blocks repeated local tests if the identical test email isn't manually deleted from the `subscriber` collection first.

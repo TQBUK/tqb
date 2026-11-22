@@ -4,31 +4,33 @@ import Stripe from "stripe"
 import { env } from "@/lib/env"
 import { client } from "@/sanity/lib/client"
 import { newSubscriberId } from "@/sanity/lib/subscriber"
-import { Resend } from "resend"
+import { getStripe } from "@/lib/stripe"
+import { getResend } from "@/lib/resend"
 import WelcomeEmail from "@/emails/welcome"
 
 import UnsubscribedEmail from "@/emails/unsubscribed"
 
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2026-01-28.clover",
-})
-
-const resend = new Resend(env.RESEND_API_KEY || "re_dummy_key_for_build")
-
 export async function POST(req: Request) {
     const body = await req.text()
 
-    // Fallback if missing secret during early dev
-    const signature = (await headers()).get("Stripe-Signature") as string
+    const signature = (await headers()).get("Stripe-Signature")
 
     let event: Stripe.Event
 
     try {
         if (!env.STRIPE_WEBHOOK_SECRET) {
-            console.warn("⚠️ STRIPE_WEBHOOK_SECRET is not set. Webhook verification skipped. Do not do this in production.")
-            event = JSON.parse(body) // Only for local testing without CLI
+            // Unsigned events are only accepted in local dev; anywhere else anyone could forge a payment.
+            if (process.env.NODE_ENV !== "development") {
+                console.error("❌ STRIPE_WEBHOOK_SECRET is not set. Rejecting webhook.")
+                return NextResponse.json({ error: "Webhook not configured" }, { status: 500 })
+            }
+            console.warn("⚠️ STRIPE_WEBHOOK_SECRET is not set. Webhook verification skipped (development only).")
+            event = JSON.parse(body)
         } else {
-            event = stripe.webhooks.constructEvent(
+            if (!signature) {
+                return NextResponse.json({ error: "Missing signature" }, { status: 400 })
+            }
+            event = Stripe.webhooks.constructEvent(
                 body,
                 signature,
                 env.STRIPE_WEBHOOK_SECRET
@@ -88,7 +90,7 @@ export async function POST(req: Request) {
 
                 // 3. Send Welcome Email via Resend & Sync Contact
                 if (env.RESEND_API_KEY) {
-                    const { data: emailData, error: emailError } = await resend.emails.send({
+                    const { data: emailData, error: emailError } = await getResend().emails.send({
                         from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
                         to: [customerEmail],
                         subject: emailContent.subject,
@@ -109,7 +111,7 @@ export async function POST(req: Request) {
                     // Add to Resend Audience
                     if (env.RESEND_AUDIENCE_ID) {
                         try {
-                            await resend.contacts.create({
+                            await getResend().contacts.create({
                                 email: customerEmail,
                                 firstName: session.customer_details?.name?.split(' ')[0] || "",
                                 lastName: session.customer_details?.name?.split(' ').slice(1).join(' ') || "",
@@ -176,7 +178,7 @@ export async function POST(req: Request) {
 
                 // Fetch customer to get email since it's not on the subscription object directly
                 const customerId = subscription.customer as string
-                const customer = await stripe.customers.retrieve(customerId) as Stripe.Customer
+                const customer = await getStripe().customers.retrieve(customerId) as Stripe.Customer
                 const customerEmail = customer.email
 
                 if (!customerEmail) break
@@ -200,7 +202,7 @@ export async function POST(req: Request) {
 
                 // 2. Send Cancellation Email via Resend
                 if (env.RESEND_API_KEY) {
-                    await resend.emails.send({
+                    await getResend().emails.send({
                         from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
                         to: [customerEmail],
                         subject: emailContent.subject,
@@ -217,11 +219,11 @@ export async function POST(req: Request) {
                     if (env.RESEND_AUDIENCE_ID) {
                         try {
                             // Find the contact id first to delete them
-                            const contactList = await resend.contacts.list({ audienceId: env.RESEND_AUDIENCE_ID })
+                            const contactList = await getResend().contacts.list({ audienceId: env.RESEND_AUDIENCE_ID })
                             const targetContact = contactList.data?.data.find(c => c.email === customerEmail)
 
                             if (targetContact?.id) {
-                                await resend.contacts.remove({
+                                await getResend().contacts.remove({
                                     audienceId: env.RESEND_AUDIENCE_ID,
                                     id: targetContact.id
                                 })

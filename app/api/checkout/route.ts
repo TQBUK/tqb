@@ -1,34 +1,28 @@
 import { NextResponse } from "next/server"
-import Stripe from "stripe"
+import type Stripe from "stripe"
 import { env } from "@/lib/env"
-
-const stripe = new Stripe(env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2026-01-28.clover",
-})
+import { getStripe } from "@/lib/stripe"
 
 export async function POST(req: Request) {
     try {
-        const { tier, priceId, isGift } = await req.json()
+        const body = await req.json()
+        const tier: string = typeof body?.tier === "string" ? body.tier : ""
+        const isGift = body?.isGift === true
 
-        let actualPriceId = priceId
+        // The price is always resolved server-side from the tier name (tier names are CMS-editable,
+        // so we match on "UK" / "International"). Never accept a price ID from the client.
+        const region = tier.includes("UK") ? "UK" : tier.includes("International") ? "International" : null
+        if (!region) {
+            return NextResponse.json({ error: "Unknown subscription tier" }, { status: 400 })
+        }
 
-        // If no priceId passed, infer from tier name
-        if (!actualPriceId) {
-            if (isGift) {
-                // Gift: one-time payment prices
-                if (tier?.includes("UK")) {
-                    actualPriceId = process.env.STRIPE_GIFT_UK_PRICE_ID
-                } else if (tier?.includes("International")) {
-                    actualPriceId = process.env.STRIPE_GIFT_INTL_PRICE_ID
-                }
-            } else {
-                // Regular: recurring subscription prices
-                if (tier?.includes("UK")) {
-                    actualPriceId = process.env.STRIPE_UK_PRICE_ID || "price_1T31N3Gm4B3XN0EEFKTzSv2s"
-                } else if (tier?.includes("International")) {
-                    actualPriceId = process.env.STRIPE_INTL_PRICE_ID || "price_1T31N3Gm4B3XN0EEFKTzSv2s"
-                }
-            }
+        const actualPriceId = isGift
+            ? (region === "UK" ? env.STRIPE_GIFT_UK_PRICE_ID : env.STRIPE_GIFT_INTL_PRICE_ID)
+            : (region === "UK" ? env.STRIPE_UK_PRICE_ID : env.STRIPE_INTL_PRICE_ID)
+
+        if (!actualPriceId || !env.STRIPE_SECRET_KEY) {
+            console.error(`❌ Checkout misconfigured: missing Stripe secret key or price ID for ${region}${isGift ? " gift" : ""}`)
+            return NextResponse.json({ error: "Checkout is temporarily unavailable" }, { status: 500 })
         }
 
         // Base custom fields (always present)
@@ -75,9 +69,9 @@ export async function POST(req: Request) {
             )
         }
 
-        const giftDuration = parseInt(process.env.GIFT_DURATION_MONTHS || "3", 10)
+        const giftDuration = env.GIFT_DURATION_MONTHS
 
-        const session = await stripe.checkout.sessions.create({
+        const session = await getStripe().checkout.sessions.create({
             payment_method_types: ["card"],
             mode: isGift ? "payment" : "subscription",
             custom_fields: customFields,
@@ -87,7 +81,7 @@ export async function POST(req: Request) {
                 ...(isGift ? { giftDurationMonths: String(giftDuration) } : {}),
             },
             shipping_address_collection: {
-                allowed_countries: tier?.includes("UK")
+                allowed_countries: region === "UK"
                     ? ["GB"]
                     : ["US", "CA", "AU", "NZ", "IE", "FR", "DE", "IT", "ES", "NL", "SE"],
             },
