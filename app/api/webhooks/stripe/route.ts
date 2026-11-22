@@ -3,9 +3,9 @@ import { NextResponse } from "next/server"
 import Stripe from "stripe"
 import { env } from "@/lib/env"
 import { client } from "@/sanity/lib/client"
-import { newSubscriberId } from "@/sanity/lib/subscriber"
+import { giftSubscriberId, newSubscriberId } from "@/sanity/lib/subscriber"
 import { getStripe } from "@/lib/stripe"
-import { getResend } from "@/lib/resend"
+import { getResend, upsertAudienceContact } from "@/lib/resend"
 import WelcomeEmail from "@/emails/welcome"
 
 import UnsubscribedEmail from "@/emails/unsubscribed"
@@ -111,12 +111,10 @@ export async function POST(req: Request) {
                     // Add to Resend Audience
                     if (env.RESEND_AUDIENCE_ID) {
                         try {
-                            await getResend().contacts.create({
+                            await upsertAudienceContact(env.RESEND_AUDIENCE_ID, {
                                 email: customerEmail,
                                 firstName: session.customer_details?.name?.split(' ')[0] || "",
                                 lastName: session.customer_details?.name?.split(' ').slice(1).join(' ') || "",
-                                audienceId: env.RESEND_AUDIENCE_ID,
-                                unsubscribed: false,
                             })
                             console.log(`👥 Added ${customerEmail} to Resend Audience.`)
                         } catch (contactErr) {
@@ -131,38 +129,50 @@ export async function POST(req: Request) {
 
                 // 4. Save Subscriber to Sanity (with gift data if applicable)
                 if (env.SANITY_API_TOKEN) {
-                    const existing = await client.fetch(
-                        `*[_type == "subscriber" && email == $email][0]`,
-                        { email: customerEmail }
-                    )
+                    if (isGift) {
+                        // Each gift is its own record. Gifts are stored under the buyer's email, so they must
+                        // never overwrite the buyer's own subscription. The ID is derived from the Checkout
+                        // Session, so a retried webhook doesn't create a duplicate.
+                        const durationMonths = parseInt(session.metadata?.giftDurationMonths || "3", 10)
+                        const expiresAt = new Date()
+                        expiresAt.setMonth(expiresAt.getMonth() + durationMonths)
 
-                    if (!existing) {
-                        const subscriberDoc: { _id: string; _type: string; [key: string]: any } = {
-                            _id: newSubscriberId(),
+                        await client.createIfNotExists({
+                            _id: giftSubscriberId(session.id),
                             _type: 'subscriber',
                             email: customerEmail,
                             status: 'active',
                             tier: 'paid',
                             signedUpAt: new Date().toISOString(),
-                            isGift: isGift,
-                        }
-
-                        if (isGift) {
-                            subscriberDoc.giftRecipientName = giftRecipientName
-                            subscriberDoc.giftMessage = giftMessage
-                            subscriberDoc.gifterEmail = customerEmail
-
-                            // Calculate gift expiry date
-                            const durationMonths = parseInt(session.metadata?.giftDurationMonths || "3", 10)
-                            const expiresAt = new Date()
-                            expiresAt.setMonth(expiresAt.getMonth() + durationMonths)
-                            subscriberDoc.giftExpiresAt = expiresAt.toISOString()
-                        }
-
-                        await client.create(subscriberDoc, {
-                            token: env.SANITY_API_TOKEN
+                            isGift: true,
+                            giftRecipientName,
+                            giftMessage,
+                            gifterEmail: customerEmail,
+                            giftExpiresAt: expiresAt.toISOString(),
                         })
-                        console.log(`📝 Subscriber ${customerEmail} saved to Sanity.${isGift ? ` (Gift order 🎁 - expires ${subscriberDoc.giftExpiresAt})` : ''}`)
+                        console.log(`📝 Gift order 🎁 from ${customerEmail} saved to Sanity (expires ${expiresAt.toISOString()})`)
+                    } else {
+                        // Upgrades a free reader or re-activates a cancelled subscriber; creates one otherwise.
+                        const existing = await client.fetch(
+                            `*[_type == "subscriber" && email == $email && isGift != true][0]{_id}`,
+                            { email: customerEmail }
+                        )
+
+                        if (existing) {
+                            await client.patch(existing._id).set({ tier: 'paid', status: 'active' }).commit()
+                            console.log(`📝 Subscriber ${customerEmail} upgraded/re-activated as paid in Sanity.`)
+                        } else {
+                            await client.create({
+                                _id: newSubscriberId(),
+                                _type: 'subscriber',
+                                email: customerEmail,
+                                status: 'active',
+                                tier: 'paid',
+                                signedUpAt: new Date().toISOString(),
+                                isGift: false,
+                            })
+                            console.log(`📝 Subscriber ${customerEmail} saved to Sanity.`)
+                        }
                     }
                 } else {
                     console.warn("⚠️ SANITY_API_TOKEN is not set. Skipping Sanity save.")
@@ -197,12 +207,14 @@ export async function POST(req: Request) {
                         if (fetchedContent) {
                             emailContent = { ...emailContent, ...fetchedContent }
                         }
-                    } catch (err) { }
+                    } catch (err) {
+                        console.error("Failed to fetch Unsubscribed Email content from Sanity:", err)
+                    }
                 }
 
                 // 2. Send Cancellation Email via Resend
                 if (env.RESEND_API_KEY) {
-                    await getResend().emails.send({
+                    const { error: emailError } = await getResend().emails.send({
                         from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
                         to: [customerEmail],
                         subject: emailContent.subject,
@@ -213,37 +225,46 @@ export async function POST(req: Request) {
                             signoff: emailContent.signoff,
                         }),
                     })
-                    console.log(`✉️ Automated Cancellation Email sent to ${customerEmail}`)
+                    if (emailError) {
+                        console.error(`❌ Failed to send Cancellation Email to ${customerEmail}:`, emailError)
+                    } else {
+                        console.log(`✉️ Automated Cancellation Email sent to ${customerEmail}`)
+                    }
 
-                    // Unsubscribe them in the Resend Audience
+                    // Remove them from the Resend Audience (by email, so it works regardless of audience size)
                     if (env.RESEND_AUDIENCE_ID) {
                         try {
-                            // Find the contact id first to delete them
-                            const contactList = await getResend().contacts.list({ audienceId: env.RESEND_AUDIENCE_ID })
-                            const targetContact = contactList.data?.data.find(c => c.email === customerEmail)
-
-                            if (targetContact?.id) {
-                                await getResend().contacts.remove({
-                                    audienceId: env.RESEND_AUDIENCE_ID,
-                                    id: targetContact.id
-                                })
+                            const { error } = await getResend().contacts.remove({
+                                audienceId: env.RESEND_AUDIENCE_ID,
+                                email: customerEmail,
+                            })
+                            if (error) {
+                                console.error(`❌ Failed to remove ${customerEmail} from Resend Audience:`, error)
+                            } else {
                                 console.log(`👥 Removed ${customerEmail} from Resend Audience.`)
                             }
-                        } catch (err) { }
+                        } catch (err) {
+                            console.error(`❌ Failed to remove ${customerEmail} from Resend Audience:`, err)
+                        }
                     }
                 }
 
-                // 3. Update Sanity Status
+                // 3. Update Sanity Status (the subscription record, never a gift bought by this customer)
                 if (env.SANITY_API_TOKEN) {
                     try {
-                        const existing = await client.fetch(`*[_type == "subscriber" && email == $email][0]`, { email: customerEmail })
+                        const existing = await client.fetch(
+                            `*[_type == "subscriber" && email == $email && isGift != true][0]{_id}`,
+                            { email: customerEmail }
+                        )
                         if (existing) {
-                            await client.patch(existing._id)
-                                .set({ status: 'cancelled' })
-                                .commit({ token: env.SANITY_API_TOKEN })
+                            await client.patch(existing._id).set({ status: 'cancelled' }).commit()
                             console.log(`📝 Marked ${customerEmail} as cancelled in Sanity.`)
+                        } else {
+                            console.warn(`⚠️ No subscriber record found in Sanity for cancelled customer ${customerEmail}`)
                         }
-                    } catch (err) { }
+                    } catch (err) {
+                        console.error(`❌ Failed to mark ${customerEmail} as cancelled in Sanity:`, err)
+                    }
                 }
 
                 break
