@@ -2,8 +2,8 @@ import { createClient } from 'next-sanity'
 
 import { apiVersion, dataset, projectId, useCdn } from '../env'
 
-// The dataset is private (it holds subscriber personal data), so every read needs a token.
-// This client must only be imported from server code: SANITY_API_TOKEN is not exposed to the browser.
+// Authenticated so server code can read subscriber documents, which are hidden from anonymous
+// reads (see sanity/lib/subscriber.ts). Only import this client from server code.
 export const client = createClient({
     projectId,
     dataset,
