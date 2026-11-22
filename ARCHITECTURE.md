@@ -69,6 +69,7 @@
 3. **Payment Completion & Stripe Webhook**:
    - The webhook detects `session.metadata.isGift === "true"` and extracts the `recipientname` and `giftmessage` custom fields.
    - A separate `subscriber` document is created in **Sanity** for each gift, with gift fields: `isGift`, `giftRecipientName`, `giftMessage`, `gifterEmail`, and `giftExpiresAt` (calculated as `now + GIFT_DURATION_MONTHS`). Its ID is `subscriber.gift-<checkoutSessionId>` (`giftSubscriberId()`), so Stripe retries don't create duplicates and the buyer's own subscription record is never overwritten.
+   - The buyer receives a **gift confirmation email** (`emails/gift-confirmation.tsx`: recipient name, gift message, number of months, "one-off payment") instead of the subscriber welcome email, and is **not** added to the paid Resend audience — they aren't the subscriber.
    - Gift subscribers appear with a 🎁 prefix in the Sanity Studio preview.
 4. **Gift Expiry (Future)**: A Vercel Cron Job can check for expired gifts daily and send nudge emails to recipients and gifters.
 
