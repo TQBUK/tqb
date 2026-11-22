@@ -1,3 +1,4 @@
+import type { NavLink } from "@/sanity/lib/types"
 import Link from "next/link"
 import Image from "next/image"
 import { client } from "@/sanity/lib/client"
@@ -45,7 +46,7 @@ export async function Header() {
                         { label: 'Blog', url: '/blog' },
                         { label: 'About', url: '/about' },
                         { label: 'Gift', url: '/gift' },
-                    ]).map((link: any, idx: number) => (
+                    ]).map((link: NavLink, idx: number) => (
                         link.url.startsWith('http') ? (
                             <a key={idx} href={link.url} className="relative text-sm font-medium text-stone-600 transition-colors hover:text-stone-900 group">
                                 {link.label}

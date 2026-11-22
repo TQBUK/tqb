@@ -1,5 +1,6 @@
 "use client"
 
+import type { GiftPageData, GiftStep, GiftTier } from "@/sanity/lib/types"
 import React, { useState } from "react"
 import { Section } from "@/components/ui/section"
 import { Container } from "@/components/ui/container"
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/ui/fade-in"
 import { Gift, Loader2, Check, Heart } from "lucide-react"
 
-export function GiftPageClient({ data }: { data: any }) {
+export function GiftPageClient({ data }: { data: GiftPageData | null }) {
     const [loadingTier, setLoadingTier] = useState<string | null>(null)
 
     // Fallbacks if data isn't seeded yet
@@ -109,7 +110,7 @@ export function GiftPageClient({ data }: { data: any }) {
                     </FadeIn>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
-                        {howItWorks.steps?.map((item: any, idx: number) => (
+                        {howItWorks.steps?.map((item: GiftStep, idx: number) => (
                             <FadeIn key={idx} className="text-center">
                                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-stone-200 bg-stone-50 mb-6">
                                     <span className="font-serif text-lg text-stone-700 font-light">{item.stepNumber || (idx + 1).toString()}</span>
@@ -137,7 +138,7 @@ export function GiftPageClient({ data }: { data: any }) {
                     </FadeIn>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 max-w-4xl mx-auto">
-                        {pricing.tiers?.map((tier: any) => (
+                        {pricing.tiers?.map((tier: GiftTier) => (
                             <FadeIn
                                 key={tier.name}
                                 className="relative flex flex-col rounded-[2rem] border border-stone-200 bg-white p-10 md:p-12 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-stone-200/50 w-full group"

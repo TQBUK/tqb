@@ -57,7 +57,7 @@ async function updateHeroImage(imagePath: string) {
         }
 
         // 3. Find the Hero section
-        const heroSectionIndex = landingPage.sections.findIndex((s: any) => s._type === 'hero')
+        const heroSectionIndex = landingPage.sections.findIndex((s: { _type: string }) => s._type === 'hero')
 
         if (heroSectionIndex === -1) {
             console.error('Hero section not found in landing page!')

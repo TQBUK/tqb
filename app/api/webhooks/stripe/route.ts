@@ -37,8 +37,8 @@ export async function POST(req: Request) {
                 env.STRIPE_WEBHOOK_SECRET
             )
         }
-    } catch (error: any) {
-        console.error("Webhook signature verification failed:", error.message)
+    } catch (error) {
+        console.error("Webhook signature verification failed:", error instanceof Error ? error.message : error)
         return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
     }
 
@@ -94,7 +94,7 @@ export async function POST(req: Request) {
                 if (isGift) {
                     if (env.RESEND_API_KEY) {
                         const { error: emailError } = await getResend().emails.send({
-                            from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
+                            from: env.EMAIL_FROM,
                             to: [customerEmail],
                             subject: `Your gift of The Quiet Bloom${giftRecipientName ? ` for ${giftRecipientName}` : ""}`,
                             react: GiftConfirmationEmail({
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
                 // 3b. Subscription: Send Welcome Email via Resend & Sync Contact
                 else if (env.RESEND_API_KEY) {
                     const { error: emailError } = await getResend().emails.send({
-                        from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
+                        from: env.EMAIL_FROM,
                         to: [customerEmail],
                         subject: emailContent.subject,
                         react: WelcomeEmail({
@@ -239,7 +239,7 @@ export async function POST(req: Request) {
                 // 2. Send Cancellation Email via Resend
                 if (env.RESEND_API_KEY) {
                     const { error: emailError } = await getResend().emails.send({
-                        from: "The Quiet Bloom <hello@thequietbloom.co.uk>",
+                        from: env.EMAIL_FROM,
                         to: [customerEmail],
                         subject: emailContent.subject,
                         react: UnsubscribedEmail({
@@ -298,7 +298,7 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ received: true })
-    } catch (error: any) {
+    } catch (error) {
         console.error("Webhook handler error:", error)
         return NextResponse.json(
             { error: "Webhook handler failed" },

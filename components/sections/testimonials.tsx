@@ -48,7 +48,7 @@ export function Testimonials({ heading = "Kind Words", items, backgroundColor = 
                                 ))}
                             </div>
                             <blockquote className={`mb-6 flex-1 text-lg leading-relaxed ${isDark ? 'text-stone-300' : 'text-stone-600'} font-light italic`}>
-                                "{item.quote}"
+                                &quot;{item.quote}&quot;
                             </blockquote>
                             <div className="flex items-center justify-between mt-auto">
                                 <div>

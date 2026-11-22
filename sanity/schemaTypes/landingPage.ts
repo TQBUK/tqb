@@ -1,4 +1,4 @@
-import { defineField, defineType } from 'sanity'
+import { defineField, defineType, type ArrayOfType } from 'sanity'
 
 const commonFields = [
     { name: 'enabled', type: 'boolean', title: 'Enabled', initialValue: true },
@@ -221,7 +221,8 @@ export const landingPage = defineType({
             name: 'sections',
             title: 'Sections',
             type: 'array',
-            of: pageSections as any,
+            // pageSections is declared as plain objects, so TS widens its literal `type` strings.
+            of: pageSections as ArrayOfType[],
         }),
     ],
 })

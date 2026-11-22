@@ -1,3 +1,4 @@
+import type { PostSummary } from '@/sanity/lib/types'
 import { MetadataRoute } from 'next'
 import { env } from '@/lib/env'
 import { client } from '@/sanity/lib/client'
@@ -7,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
 
     // Fetch all posts to generate dynamic routes
-    let posts: any[] = []
+    let posts: PostSummary[] = []
     try {
         posts = await client.fetch(postsQuery)
     } catch (error) {

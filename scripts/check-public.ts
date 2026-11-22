@@ -20,8 +20,8 @@ async function check() {
         if (data) {
             console.log('Title:', data.title)
         }
-    } catch (err: any) {
-        console.error('Fetch error:', err.message)
+    } catch (err) {
+        console.error('Fetch error:', err instanceof Error ? err.message : err)
     }
 }
 

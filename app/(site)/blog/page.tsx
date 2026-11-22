@@ -1,3 +1,4 @@
+import type { PostSummary } from "@/sanity/lib/types"
 import { client } from "@/sanity/lib/client"
 import { postsQuery } from "@/sanity/lib/queries"
 import { Section } from "@/components/ui/section"
@@ -28,7 +29,7 @@ export default async function BlogIndexPage() {
                     </div>
 
                     <div className="grid gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
-                        {posts.map((post: any) => (
+                        {posts.map((post: PostSummary) => (
                             <Link
                                 key={post._id}
                                 href={`/blog/${post.slug}`}
@@ -53,13 +54,15 @@ export default async function BlogIndexPage() {
                                 </div>
 
                                 <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wider text-stone-500 mb-3">
-                                    <time>
-                                        {new Date(post.publishedAt).toLocaleDateString("en-GB", {
-                                            month: 'short',
-                                            day: 'numeric',
-                                            year: 'numeric'
-                                        })}
-                                    </time>
+                                    {post.publishedAt && (
+                                        <time dateTime={post.publishedAt}>
+                                            {new Date(post.publishedAt).toLocaleDateString("en-GB", {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}
+                                        </time>
+                                    )}
                                 </div>
 
                                 <h2 className="mb-3 font-serif text-2xl font-normal text-stone-900 leading-tight group-hover:text-stone-600 transition-colors">
