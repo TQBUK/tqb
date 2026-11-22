@@ -16,6 +16,7 @@
 - **Styling**: Tailwind CSS v4, `lucide-react` icons, Framer Motion for micro-animations, and `shadcn/ui` foundation.
 - **Analytics**: Vercel Analytics and Umami.
 - **Images**: `next/image` uses a custom loader (`lib/image-loader.ts`) that has the Sanity and Unsplash CDNs resize and convert images (`w`, `q`, `auto=format`), so the hosting platform's image optimisation (and its usage limits) is not used.
+- **Brand assets**: vector logo files (traced from the original logo; lettering is Libre Baskerville outlines) live in `public/brand/` — stacked, horizontal, mark-only and wordmark lockups, each with an `-on-dark` variant, plus PNG exports and the app icon. Favicons are Next.js file conventions: `app/favicon.ico` (16/32/48px), `app/icon.svg`, `app/apple-icon.png`. The header still shows the logo uploaded in Sanity → Site Settings; upload `public/brand/logo-stacked.png` there to use the new file.
 
 ### Caching & Revalidation
 
